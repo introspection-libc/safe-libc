@@ -204,6 +204,7 @@ int __safe_strncmp(const char* s1, const char* s2, size_t n)
 	ssize_t sz = s1sz < s2sz ? s1sz : s2sz;
 	if(n > sz) {
 		fprintf(stderr, "[strncmp] invalid len: %zu vs %zu\n", n, sz);
+		__safec_print_stacktrace();
 		int val = strncmp(s1, s2, sz);
 		int l1 = __safe_strlen(s1);
 		int l2 = __safe_strlen(s2);
@@ -217,6 +218,54 @@ int __safe_strncmp(const char* s1, const char* s2, size_t n)
 	} else {
 		return strncmp(s1, s2, n);
 	}
+}
+
+// memory functions
+void* __safe_memcpy(void* dest, const void* src, size_t n)
+{
+	ssize_t dstsz = _size_right(dest);
+	size_t len = n;
+	if(dstsz < n) {
+		fprintf(stderr, "[memcpy] invalid len: %zu vs %zd\n", n, dstsz);
+		__safec_print_stacktrace();
+		len = dstsz;
+	}
+	return memcpy(dest, src, len);
+}
+
+int __safe_memcmp(const void* s1, const void* s2, size_t n)
+{
+	ssize_t s1sz = _size_right(s1);
+	ssize_t s2sz = _size_right(s2);
+	ssize_t sz = s1sz < s2sz ? s1sz : s2sz;
+	if(n > sz) {
+		fprintf(stderr, "[memcmp] invalid len: %zu vs %zu\n", n, sz);
+		__safec_print_stacktrace();
+		int val = memcmp(s1, s2, sz);
+		int l1 = __safe_strlen(s1);
+		int l2 = __safe_strlen(s2);
+		if(l1 == l2) {
+			return val;
+		} else if(l1 < l2) {
+			return !val ? -1 : val;
+		} else { // l1 > l2
+			return !val ? 1 : val;
+		}
+	} else {
+		return memcmp(s1, s2, n);
+	}
+}
+
+void* __safe_memset(void* s, int c, size_t n)
+{
+	ssize_t sz = _size_right(s);
+	size_t len = n;
+	if(sz < n) {
+		fprintf(stderr, "[memset] invalid len: %zu vs %zd\n", n, sz);
+		__safec_print_stacktrace();
+		len = sz;
+	}
+	return memset(s, c, len);
 }
 
 // UNIX IO
