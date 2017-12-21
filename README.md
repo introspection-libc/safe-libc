@@ -34,3 +34,13 @@ Use the `compile` script (and edit the `CLANG_PATH` if necessary):
 ```
 ./compile -o gets examples/gets.c
 ```
+
+And in the real world?
+======================
+
+… it can prevent exploitation of vulnerabilities without crashing the program,
+as long as a libc function call with invalid parameters causes the overflow.
+Just have a look:
+
+- CVE-2017-14493 ([Google blogpost](https://security.googleblog.com/2017/10/behind-masq-yet-more-dns-and-dhcp.html))
+- CVE-2017-14496 ([Google blogpost](https://security.googleblog.com/2017/10/behind-masq-yet-more-dns-and-dhcp.html))
