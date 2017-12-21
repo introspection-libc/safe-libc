@@ -69,8 +69,7 @@ char* __safe_fgets(char* s, int size, FILE* stream)
 		}
 		__safec_print_stacktrace();
 	}
-	fprintf(stderr, "len = %d\n", len);
-	return fgets(s, len, stdin);
+	return fgets(s, len, stream);
 }
 
 // strings
