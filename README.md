@@ -42,5 +42,6 @@ And in the real world?
 as long as a libc function call with invalid parameters causes the overflow.
 Just have a look:
 
+- CVE-2017-9047 ([Bug report](http://www.openwall.com/lists/oss-security/2017/05/15/1))
 - CVE-2017-14493 ([Google blogpost](https://security.googleblog.com/2017/10/behind-masq-yet-more-dns-and-dhcp.html))
 - CVE-2017-14496 ([Google blogpost](https://security.googleblog.com/2017/10/behind-masq-yet-more-dns-and-dhcp.html))
