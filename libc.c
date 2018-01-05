@@ -78,6 +78,7 @@ size_t __safe_strlen(const char* s)
 	ssize_t bufsz = _size_right(s);
 	if(bufsz < 0) {
 		fprintf(stderr, "[strlen] overflow: %zd byte(s)\n", -bufsz);
+		__safec_print_stacktrace();
 		return 0;
 	}
 	return strnlen(s, bufsz);
@@ -89,6 +90,7 @@ size_t __safe_strnlen(const char* s, size_t maxlen)
 	size_t len = maxlen;
 	if(bufsz < 0) {
 		fprintf(stderr, "[strnlen] overflow: %zd byte(s)\n", -bufsz);
+		__safec_print_stacktrace();
 		return 0;
 	}
 	if(bufsz < maxlen) {
@@ -103,22 +105,22 @@ char* __safe_strcpy(char* dest, const char* src)
 {
 	size_t srcsz = __safe_strlen(src);
 	ssize_t dstsz = _size_right(dest);
+	size_t dstln = __safe_strlen(dest);
 	char* result;
 
 	if(dstsz < 0) {
 		fprintf(stderr, "[strcpy] overflow: %zd byte(s) (dest)\n", -dstsz);
 		__safec_abort();
 	}
+	size_t dstlen = dstsz - dstln;
 	if(dstsz < srcsz) {
-		fprintf(stderr, "[strcpy] overflow: %zu vs %zu\n", srcsz, dstsz);
+		fprintf(stderr, "[strcpy] overflow: %zu vs %zu\n", srcsz, dstlen);
 		__safec_print_stacktrace();
-		result = strncpy(dest, src, dstsz);
-		dest[dstsz - 1] = 0;
-		return result;
-	} else {
-		// enough space
-		return strcpy(dest, src);
 	}
+	fprintf(stderr, "[strcpy] srcsz=%zu, dstlen=%zd\n", srcsz, dstlen);
+	result = strncpy(dest, src, dstlen);
+	dest[dstln + srcsz - 1] = 0;
+	return result;
 }
 
 char* __safe_strncpy(char* dest, const char* src, size_t n)
