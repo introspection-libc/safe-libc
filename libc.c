@@ -77,9 +77,13 @@ size_t __safe_strlen(const char* s)
 {
 	ssize_t bufsz = _size_right(s);
 	if(bufsz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return strlen(s);
+#if 0
 		fprintf(stderr, "[strlen] overflow: %zd byte(s)\n", -bufsz);
 		__safec_print_stacktrace();
 		return 0;
+#endif
 	}
 	return strnlen(s, bufsz);
 }
@@ -89,9 +93,13 @@ size_t __safe_strnlen(const char* s, size_t maxlen)
 	ssize_t bufsz = _size_right(s);
 	size_t len = maxlen;
 	if(bufsz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return strnlen(s, maxlen);
+#if 0
 		fprintf(stderr, "[strnlen] overflow: %zd byte(s)\n", -bufsz);
 		__safec_print_stacktrace();
 		return 0;
+#endif
 	}
 	if(bufsz < maxlen) {
 		fprintf(stderr, "[strnlen] invalid maxlen: %zu vs %zu\n", maxlen, bufsz);
@@ -105,12 +113,16 @@ char* __safe_strcpy(char* dest, const char* src)
 {
 	size_t srcsz = __safe_strlen(src);
 	ssize_t dstsz = _size_right(dest);
-	size_t dstln = __safe_strlen(dest);
+	size_t dstln = dstsz > 0 ? __safe_strlen(dest) : 0;
 	char* result;
 
 	if(dstsz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return strcpy(dest, src);
+#if 0
 		fprintf(stderr, "[strcpy] overflow: %zd byte(s) (dest)\n", -dstsz);
 		__safec_abort();
+#endif
 	}
 	size_t dstlen = dstsz - dstln;
 	if(dstsz < srcsz) {
@@ -118,9 +130,13 @@ char* __safe_strcpy(char* dest, const char* src)
 		__safec_print_stacktrace();
 	}
 	fprintf(stderr, "[strcpy] srcsz=%zu, dstlen=%zd\n", srcsz, dstlen);
-	result = strncpy(dest, src, dstlen);
-	dest[dstln + srcsz - 1] = 0;
-	return result;
+	if(dstlen > 0) {
+		result = strncpy(dest, src, dstlen);
+		dest[dstln + srcsz - 1] = 0;
+		return result;
+	} else {
+		return dest;
+	}
 }
 
 char* __safe_strncpy(char* dest, const char* src, size_t n)
@@ -129,8 +145,12 @@ char* __safe_strncpy(char* dest, const char* src, size_t n)
 	size_t len = n;
 
 	if(dstsz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return strncpy(dest, src, n);
+#if 0
 		fprintf(stderr, "[strncpy] overflow: %zd byte(s) (dest)\n", -dstsz);
 		__safec_abort();
+#endif
 	}
 	if(dstsz < n) {
 		fprintf(stderr, "[strncpy] overflow: %zu vs %zu\n", n, dstsz);
@@ -147,8 +167,12 @@ char* __safe_strcat(char* dest, const char* src)
 	size_t dstln = __safe_strlen(dest);
 	size_t srcln = __safe_strlen(src);
 	if(dstsz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return strcat(dest, src);
+#if 0
 		fprintf(stderr, "[strcat] overflow: %zd byte(s) (dest)\n", -dstsz);
 		__safec_abort();
+#endif
 	}
 	if(dstln + srcln + 1 > dstsz) {
 		size_t n = dstsz - dstln - 1;
@@ -167,8 +191,12 @@ char* __safe_strncat(char* dest, const char* src, size_t n)
 	size_t dstln = __safe_strlen(dest);
 	size_t len = n;
 	if(dstsz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return strncat(dest, src, n);
+#if 0
 		fprintf(stderr, "[strncat] overflow: %zd byte(s) (dest)\n", -dstsz);
 		__safec_abort();
+#endif
 	}
 	if(dstln + n + 1 > dstsz) {
 		len = dstsz - dstln - 1;
@@ -183,6 +211,10 @@ int __safe_strcmp(const char* s1, const char* s2)
 	ssize_t s1sz = _size_right(s1);
 	ssize_t s2sz = _size_right(s2);
 	ssize_t sz = s1sz < s2sz ? s1sz : s2sz;
+	if(s1sz < 0 || s2sz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return strcmp(s1, s2);
+	}
 	if(s1sz != s2sz) {
 		int val = strncmp(s1, s2, sz);
 		int l1 = __safe_strlen(s1);
@@ -227,6 +259,10 @@ void* __safe_memcpy(void* dest, const void* src, size_t n)
 {
 	ssize_t dstsz = _size_right(dest);
 	size_t len = n;
+	if(dstsz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return memcpy(dest, src, len);
+	}
 	if(dstsz < n) {
 		fprintf(stderr, "[memcpy] invalid len: %zu vs %zd\n", n, dstsz);
 		__safec_print_stacktrace();
@@ -240,6 +276,10 @@ int __safe_memcmp(const void* s1, const void* s2, size_t n)
 	ssize_t s1sz = _size_right(s1);
 	ssize_t s2sz = _size_right(s2);
 	ssize_t sz = s1sz < s2sz ? s1sz : s2sz;
+	if(s1sz < 0 || s2sz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return memcmp(s1, s2, n);
+	}
 	if(n > sz) {
 		fprintf(stderr, "[memcmp] invalid len: %zu vs %zu\n", n, sz);
 		__safec_print_stacktrace();
@@ -262,6 +302,10 @@ void* __safe_memset(void* s, int c, size_t n)
 {
 	ssize_t sz = _size_right(s);
 	size_t len = n;
+	if(sz < 0) {
+		// possibly an overflow/underflow, fall back to normal behavior
+		return memset(s, c, len);
+	}
 	if(sz < n) {
 		fprintf(stderr, "[memset] invalid len: %zu vs %zd\n", n, sz);
 		__safec_print_stacktrace();
