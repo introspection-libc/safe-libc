@@ -4,6 +4,7 @@
 #include <string.h>
 #include <limits.h>
 #include <signal.h>
+#include <errno.h>
 
 ssize_t _size_right(const void*);
 
@@ -40,6 +41,7 @@ static void __safec_abort(void)
 // stdio
 char* __safe_gets(char* s)
 {
+	int err = errno;
 	ssize_t bufsz = _size_right(s);
 	if(bufsz <= 1) {
 		fprintf(stderr, "[gets] buffer too small to store any data (%zd)\n", bufsz);
@@ -48,11 +50,13 @@ char* __safe_gets(char* s)
 			*s = 0;
 		return NULL;
 	}
+	errno = err;
 	return fgets(s, bufsz, stdin);
 }
 
 char* __safe_fgets(char* s, int size, FILE* stream)
 {
+	int err = errno;
 	ssize_t bufsz = _size_right(s);
 	int len = size;
 	if(bufsz < 0) {
@@ -69,6 +73,7 @@ char* __safe_fgets(char* s, int size, FILE* stream)
 		}
 		__safec_print_stacktrace();
 	}
+	errno = err;
 	return fgets(s, len, stream);
 }
 
@@ -129,7 +134,7 @@ char* __safe_strcpy(char* dest, const char* src)
 		fprintf(stderr, "[strcpy] overflow: %zu vs %zu\n", srcsz, dstlen);
 		__safec_print_stacktrace();
 	}
-	fprintf(stderr, "[strcpy] srcsz=%zu, dstlen=%zd\n", srcsz, dstlen);
+	// fprintf(stderr, "[strcpy] srcsz=%zu, dstlen=%zd\n", srcsz, dstlen);
 	if(dstlen > 0) {
 		result = strncpy(dest, src, dstlen);
 		dest[dstln + srcsz - 1] = 0;
@@ -317,32 +322,36 @@ void* __safe_memset(void* s, int c, size_t n)
 // UNIX IO
 ssize_t __safe_read(int fd, void* buf, size_t count)
 {
+	int err = errno;
 	ssize_t bufsz = _size_right(buf);
 	size_t len = count;
 	if(bufsz < 0) {
-		fprintf(stderr, "[read] overflow: %zd byte(s)\n", -bufsz);
-		__safec_abort();
+		// possibly an overflow/underflow, fall back to normal behavior
+		return read(fd, buf, len);
 	}
 	if(bufsz < len) {
 		fprintf(stderr, "[read] invalid size: %zu vs %zu\n", count, bufsz);
 		len = bufsz;
 		__safec_print_stacktrace();
 	}
+	errno = err;
 	return read(fd, buf, len);
 }
 
 ssize_t __safe_write(int fd, const void* buf, size_t count)
 {
+	int err = errno;
 	ssize_t bufsz = _size_right(buf);
 	size_t len = count;
 	if(bufsz < 0) {
-		fprintf(stderr, "[write] overflow: %zd byte(s)\n", -bufsz);
-		__safec_abort();
+		// possibly an overflow/underflow, fall back to normal behavior
+		return write(fd, buf, len);
 	}
 	if(bufsz < len) {
 		fprintf(stderr, "[write] invalid size: %zu vs %zu\n", count, bufsz);
 		len = bufsz;
 		__safec_print_stacktrace();
 	}
+	errno = err;
 	return write(fd, buf, len);
 }
