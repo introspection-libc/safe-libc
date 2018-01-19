@@ -11,6 +11,7 @@ ssize_t _size_right(const void*);
 /* link with --export-dynamic (-E) */
 #include <execinfo.h>
 
+#ifndef NO_STACKTRACE
 #define	STACKTRACE_SIZE 1024
 static void* stacktrace[STACKTRACE_SIZE];
 
@@ -31,6 +32,12 @@ static void __safec_print_stacktrace(void)
 		}
 	}
 }
+#else
+static void __safec_print_stacktrace(void)
+{
+	fprintf(stderr, "[backtrace not enabled]\n");
+}
+#endif
 
 static void __safec_abort(void)
 {
