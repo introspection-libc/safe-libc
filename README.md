@@ -23,6 +23,7 @@ git clone https://github.com/llvm-mirror/llvm
 (cd llvm/projects && git checkout safe)
 mkdir llvm-build && cd llvm-build
 CC=clang CXX=clang++ cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON -DLLVM_TARGETS_TO_BUILD=X86 ~/git/llvm
+make
 export PATH=$(pwd)/bin:$PATH
 ```
 
