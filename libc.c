@@ -272,16 +272,26 @@ int __safe_strncmp(const char* s1, const char* s2, size_t n)
 void* __safe_memcpy(void* dest, const void* src, size_t n)
 {
 	ssize_t dstsz = _size_right(dest);
+	ssize_t srcsz = _size_right(src);
 	size_t len = n;
-	if(dstsz < 0) {
-		fprintf(stderr, "[memcpy] overflow: %zu byte(s)\n", -dstsz);
+	if(srcsz < 0 || dstsz < 0) {
+		if(srcsz < 0) {
+			fprintf(stderr, "[memcpy] overflow: %zu byte(s) (src)\n", -srcsz);
+		} else {
+			fprintf(stderr, "[memcpy] overflow: %zu byte(s) (dest)\n", -dstsz);
+		}
 		__safec_print_stacktrace();
 		return dest;
 	}
 	if(dstsz < n) {
-		fprintf(stderr, "[memcpy] invalid len: %zu vs %zd\n", n, dstsz);
+		fprintf(stderr, "[memcpy] invalid len: %zu vs %zd (dest)\n", n, dstsz);
 		__safec_print_stacktrace();
 		len = dstsz;
+	}
+	if(srcsz < len) {
+		fprintf(stderr, "[memcpy] invalid len: %zu vs %zd\n (src)", n, srcsz);
+		__safec_print_stacktrace();
+		len = srcsz;
 	}
 	return memcpy(dest, src, len);
 }
