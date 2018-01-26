@@ -1,0 +1,5 @@
+#!/bin/sh
+DIR=$(dirname $0)
+CLANG_PATH=$HOME/git/llvm-build/bin
+$CLANG_PATH/clang -fsanitize=address -fno-common -fPIC -Wall -O3 -g -D_POSIX_C_SOURCE=200809L $DIR/libc.c -c -o $DIR/libc-asan.o
+$CLANG_PATH/clang -fsanitize=address -fno-common -fPIC -pie -Wall -O3 -g -D_POSIX_C_SOURCE=200809L -Wl,-E -include $DIR/libc.h $DIR/libc-asan.o "$@"
