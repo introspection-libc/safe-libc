@@ -1,0 +1,5 @@
+#!/bin/sh
+DIR=$(dirname $0)
+gcc -Wall -mmpx -fcheck-pointer-bounds -O3 -g -D_POSIX_C_SOURCE=200809L $DIR/libc.c -c -o $DIR/libc-mpx.o
+gcc -Wall -mmpx -fcheck-pointer-bounds -O3 -g -D_POSIX_C_SOURCE=200809L $DIR/mpx.c -c -o $DIR/mpx.o
+gcc -Wall -mmpx -fcheck-pointer-bounds -O3 -g -D_POSIX_C_SOURCE=200809L -Wl,-E -include $DIR/libc.h $DIR/libc-mpx.o $DIR/mpx.o "$@"

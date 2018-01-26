@@ -10,8 +10,8 @@ How does it work?
 
 Code is instrumented with AddressSanitizer and wrapper functions around
 (potentially) unsafe libc functions use information from AddressSanitizer to
-prevent buffer overflows. Unterminated strings, wrong length information and
-unsafe functions like `gets` are no problem anymore.
+prevent buffer overflows. Our libc can mitigate unterminated strings,
+wrong length information and overflows in unsafe functions like `gets`.
 
 How to build the toolchain
 ==========================
@@ -30,18 +30,27 @@ export PATH=$(pwd)/bin:$PATH
 How to build a program using the safe libc
 ==========================================
 
-Use the `compile` script (and edit the `CLANG_PATH` if necessary):
+To compile with ASan, use the `compile-asan` script (and edit the
+`CLANG_PATH` if necessary):
 
 ```
-./compile -o gets examples/gets.c
+./compile-asan -o gets examples/gets.c
 ```
+
+To compile with Intel MPX and GCC Pointer Bounds Checker, use the
+`compile-mpx` script:
+
+```
+./compile-mpx -o gets examples/gets.c
+```
+
 
 And in the real world?
 ======================
 
 … it can prevent exploitation of vulnerabilities without crashing the program,
 as long as a libc function call with invalid parameters causes the overflow.
-Just have a look:
+For example, check out the bugs below:
 
 - CVE-2017-9047 ([Bug report](http://www.openwall.com/lists/oss-security/2017/05/15/1))
 - CVE-2017-14493 ([Google blogpost](https://security.googleblog.com/2017/10/behind-masq-yet-more-dns-and-dhcp.html))
