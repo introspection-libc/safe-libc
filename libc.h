@@ -20,6 +20,13 @@
 #define	read	__safe_read
 #define	write	__safe_write
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 char* __safe_gets(char* s);
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif
