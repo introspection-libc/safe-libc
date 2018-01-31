@@ -1,6 +1,11 @@
 #!/bin/sh
 DIR=$(dirname $0)
 CLANG_PATH=$HOME/git/llvm-build/bin
+SOFTBOUND_PATH=$HOME/git/softboundcets-3.8.0/llvm-38/build/bin
 $CLANG_PATH/clang -fsanitize=address -fno-common -fPIC -Wall -O3 -g -D_POSIX_C_SOURCE=200809L $DIR/libc.c -c -o $DIR/libc-asan.o
+if [ -x $SOFTBOUND_PATH/clang ]; then
+	$SOFTBOUND_PATH/clang -fsoftboundcets -fno-vectorize -fPIC -Wall -O3 -g -D_POSIX_C_SOURCE=200809L -DNO_STACKTRACE $DIR/libc.c -c -o $DIR/libc-softbound.o
+	$SOFTBOUND_PATH/clang -fsoftboundcets -fno-vectorize -fPIC -Wall -O3 -g -D_POSIX_C_SOURCE=200809L -DNO_STACKTRACE $DIR/softbound.c -c -o $DIR/softbound.o
+fi
 gcc -fPIC -Wall -mmpx -fcheck-pointer-bounds $DIR/libc.c -c -o $DIR/libc-mpx.o
 gcc -Wall -mmpx -fcheck-pointer-bounds -fPIC -O3 -g -D_POSIX_C_SOURCE=200809L $DIR/mpx.c -c -o $DIR/mpx.o
