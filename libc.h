@@ -1,29 +1,29 @@
 #ifndef __LIBC_H__
 #define __LIBC_H__
 
-#define	gets	__safe_gets
-#define	fgets	__safe_fgets
+#define	gets	__introspection_gets
+#define	fgets	__introspection_fgets
 
-#define	strlen	__safe_strlen
-#define	strnlen	__safe_strnlen
-#define	strcpy	__safe_strcpy
-#define	strncpy	__safe_strncpy
-#define	strcat	__safe_strcat
-#define	strncat	__safe_strncat
-#define	strcmp	__safe_strcmp
-#define	strncmp	__safe_strncmp
+#define	strlen	__introspection_strlen
+#define	strnlen	__introspection_strnlen
+#define	strcpy	__introspection_strcpy
+#define	strncpy	__introspection_strncpy
+#define	strcat	__introspection_strcat
+#define	strncat	__introspection_strncat
+#define	strcmp	__introspection_strcmp
+#define	strncmp	__introspection_strncmp
 
-#define	memcpy	__safe_memcpy
-#define	memcmp	__safe_memcmp
-#define	memset	__safe_memset
+#define	memcpy	__introspection_memcpy
+#define	memcmp	__introspection_memcmp
+#define	memset	__introspection_memset
 
-#define	read	__safe_read
-#define	write	__safe_write
+#define	read	__introspection_read
+#define	write	__introspection_write
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-char* __safe_gets(char* s);
+char* __introspection_gets(char* s);
 #ifdef __cplusplus
 }
 #endif

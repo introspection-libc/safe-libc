@@ -6,7 +6,7 @@
 #include <signal.h>
 #include <errno.h>
 
-#define INTERCEPTOR(x)	__safe_##x
+#define INTERCEPTOR(x)	__introspection_##x
 #define REAL(x)		x
 
 #define LOG(...)	fprintf(stderr, __VA_ARGS__)
