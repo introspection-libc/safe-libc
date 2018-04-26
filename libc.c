@@ -125,27 +125,22 @@ char* INTERCEPTOR(strcpy)(char* dest, const char* src)
 {
 	size_t srcsz = INTERCEPTOR(strlen)(src);
 	ssize_t dstsz = _size_right(dest);
-	size_t dstln = dstsz > 0 ? INTERCEPTOR(strlen)(dest) : 0;
 	char* result;
-	size_t dstlen;
 
 	if(dstsz < 0) {
 		LOG("[strcpy] overflow: %zd byte(s) (dest)\n", -dstsz);
 		__safec_print_stacktrace();
 		return dest;
 	}
-	dstlen = dstsz - dstln;
+
 	if(dstsz < srcsz) {
-		LOG("[strcpy] overflow: %zu vs %zu\n", srcsz, dstlen);
+		LOG("[strcpy] overflow: %zu vs %zu\n", srcsz, dstsz);
 		__safec_print_stacktrace();
 	}
-	if(dstlen > 0) {
-		result = REAL(strncpy)(dest, src, dstlen);
-		dest[dstln + srcsz - 1] = 0;
-		return result;
-	} else {
-		return dest;
-	}
+
+    result = REAL(strncpy)(dest, src, dstsz);
+    dest[srcsz] = 0;
+    return result;
 }
 
 char* INTERCEPTOR(strncpy)(char* dest, const char* src, size_t n)
